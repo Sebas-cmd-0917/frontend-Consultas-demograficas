@@ -224,7 +224,8 @@ function ErrorScreen({ message }: { message: string }) {
 export default function CanvasWrapper() {
   const { cargando, error, geoJSON, regiones } = useFetchDemografia();
 
-  if (cargando) return <LoadingScreen />;
+  // Show loading while data is being fetched OR before the first effect has fired (geoJSON still null)
+  if (cargando || (!geoJSON && !error)) return <LoadingScreen />;
   if (error) return <ErrorScreen message={error} />;
   if (!geoJSON || geoJSON.features.length === 0) {
     return <ErrorScreen message="El GeoJSON no contiene features válidas." />;
