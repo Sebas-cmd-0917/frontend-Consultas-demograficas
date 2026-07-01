@@ -1,46 +1,50 @@
 "use client";
 
-import { BarChart3, Users, MapPin, TrendingUp, TrendingDown, Calendar, Building2 } from "lucide-react";
+import { Users, MapPin, Calendar, Building2, ChevronLeft } from "lucide-react";
 import { useDatosDemograficos } from "@/hooks/useDatosDemograficos";
 import { extractCodigoDane, extractNombre } from "@/utils/geojson-to-shape.util";
 import { intensidadAColor } from "@/utils/generador-color.util";
 import type { MunicipioData } from "@/types/demografia.types";
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// ─── Atoms ─────────────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">{children}</p>
+  );
+}
 
 function StatCard({
   label,
   value,
   icon: Icon,
-  iconClass = "text-violet-400",
 }: {
   label: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
-  iconClass?: string;
 }) {
   return (
-    <div className="bg-gray-700/40 rounded-xl p-4 border border-gray-700/60">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className={`w-4 h-4 ${iconClass}`} />
-        <span className="text-xs text-gray-400 uppercase tracking-wider">{label}</span>
+    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">{label}</span>
       </div>
-      <p className="text-2xl font-bold font-mono">{value}</p>
+      <p className="text-2xl font-bold font-mono text-slate-100 leading-none">{value}</p>
     </div>
   );
 }
 
-function IntensityBar({ intensidad }: { intensidad: number }) {
+function CoverageBar({ intensidad }: { intensidad: number }) {
   const color = intensidadAColor(intensidad);
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-gray-400">Intensidad laboral</span>
-        <span className="font-mono font-semibold" style={{ color }}>
-          {(intensidad * 100).toFixed(1)} %
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-baseline">
+        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">Cobertura</span>
+        <span className="text-sm font-semibold font-mono" style={{ color }}>
+          {(intensidad * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="h-2 rounded-full bg-gray-700 overflow-hidden">
+      <div className="h-1 rounded-full bg-slate-700/60 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${intensidad * 100}%`, backgroundColor: color }}
@@ -50,17 +54,17 @@ function IntensityBar({ intensidad }: { intensidad: number }) {
   );
 }
 
-function MunicipioRow({ mun, maxEmpleados }: { mun: MunicipioData; maxEmpleados: number }) {
-  const pct = maxEmpleados > 0 ? (mun.empleados / maxEmpleados) * 100 : 0;
+function MunicipioRow({ mun, max }: { mun: MunicipioData; max: number }) {
+  const pct = max > 0 ? (mun.empleados / max) * 100 : 0;
   return (
-    <div className="space-y-0.5">
-      <div className="flex justify-between text-xs">
-        <span className="text-gray-300 truncate mr-2">{mun.municipio}</span>
-        <span className="text-gray-400 font-mono shrink-0">{mun.empleados}</span>
+    <div className="space-y-1">
+      <div className="flex justify-between items-center">
+        <span className="text-xs text-slate-300 truncate mr-2">{mun.municipio}</span>
+        <span className="text-[11px] font-mono text-slate-400 shrink-0">{mun.empleados.toLocaleString("es-CO")}</span>
       </div>
-      <div className="h-1 rounded-full bg-gray-700/60 overflow-hidden">
+      <div className="h-0.5 rounded-full bg-slate-700/60 overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full"
           style={{ width: `${pct}%`, backgroundColor: intensidadAColor(pct / 100) }}
         />
       </div>
@@ -68,36 +72,16 @@ function MunicipioRow({ mun, maxEmpleados }: { mun: MunicipioData; maxEmpleados:
   );
 }
 
-function ColorLegend() {
-  return (
-    <section className="space-y-2">
-      <h2 className="text-xs uppercase text-gray-500 tracking-wider">Escala de intensidad</h2>
-      <div
-        className="h-3 rounded-full"
-        style={{
-          background: "linear-gradient(to right, #312e81, #7c3aed, #ec4899, #f97316)",
-        }}
-      />
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>Baja</span>
-        <span>Media</span>
-        <span>Alta</span>
-      </div>
-    </section>
-  );
-}
-
-// ─── Main component ────────────────────────────────────────────────────────────
+// ─── Main panel ────────────────────────────────────────────────────────────────
 
 export default function PanelMeticas() {
-  const meta = useDatosDemograficos((s) => s.meta);
-  const geoJSON = useDatosDemograficos((s) => s.geoJSON);
-  const regiones = useDatosDemograficos((s) => s.regiones);
-  const departamentoSeleccionado = useDatosDemograficos((s) => s.departamentoSeleccionado);
-  const setSeleccionado = useDatosDemograficos((s) => s.setSeleccionado);
-  const cargando = useDatosDemograficos((s) => s.cargando);
+  const meta                  = useDatosDemograficos((s) => s.meta);
+  const geoJSON               = useDatosDemograficos((s) => s.geoJSON);
+  const regiones              = useDatosDemograficos((s) => s.regiones);
+  const selected              = useDatosDemograficos((s) => s.departamentoSeleccionado);
+  const setSeleccionado        = useDatosDemograficos((s) => s.setSeleccionado);
+  const cargando              = useDatosDemograficos((s) => s.cargando);
 
-  // Build name lookup from GeoJSON features
   const nombrePorDane = (() => {
     if (!geoJSON) return new Map<string, string>();
     const m = new Map<string, string>();
@@ -109,218 +93,208 @@ export default function PanelMeticas() {
   })();
 
   const deptoInfo = (() => {
-    if (!departamentoSeleccionado) return null;
-    const region = regiones.find((r) => r.codigoDane === departamentoSeleccionado);
-    const nombre = nombrePorDane.get(departamentoSeleccionado) ?? departamentoSeleccionado;
+    if (!selected) return null;
+    const region = regiones.find((r) => r.codigoDane === selected);
+    const nombre = nombrePorDane.get(selected) ?? selected;
     return { region, nombre };
   })();
 
-  // Departments sorted by employee count desc (navigation list)
   const regionesSorted = [...regiones]
     .filter((r) => r.codigoDane)
     .sort((a, b) => (b.totalEmpleados ?? b.empleados ?? 0) - (a.totalEmpleados ?? a.empleados ?? 0));
 
-  return (
-    <div className="flex flex-col gap-5 h-full">
-      {/* ── Header ── */}
-      <header className="flex items-center gap-3 border-b border-gray-700 pb-4 shrink-0">
-        <BarChart3 className="w-6 h-6 text-violet-400" />
-        <div>
-          <h1 className="text-lg font-bold leading-tight">Métricas Demográficas</h1>
-          <p className="text-xs text-gray-500">Colombia · Vista departamental</p>
-        </div>
-      </header>
+  const fecha = meta?.fechaActualizacion ?? meta?.generadoEn;
 
+  return (
+    <div className="flex flex-col h-full">
+
+      {/* ── Sidebar header ── */}
+      <div className="shrink-0 px-5 py-5 border-b border-slate-800">
+        <SectionLabel>Panel de métricas</SectionLabel>
+        <h1 className="text-base font-semibold text-slate-100 mt-1 leading-snug">
+          Distribución laboral
+        </h1>
+        <p className="text-xs text-slate-500 mt-0.5">Colombia · Datos departamentales</p>
+      </div>
+
+      {/* ── Spinner ── */}
       {cargando && (
-        <div className="flex items-center gap-2 text-sm text-gray-400 shrink-0">
-          <div className="w-4 h-4 border border-violet-500 border-t-transparent rounded-full animate-spin" />
+        <div className="shrink-0 flex items-center gap-2 px-5 py-3 text-xs text-slate-500">
+          <div className="w-3.5 h-3.5 border border-indigo-500 border-t-transparent rounded-full animate-spin" />
           Cargando datos…
         </div>
       )}
 
-      {/* ── National totals ── */}
-      {meta && (
-        <section className="space-y-3 shrink-0">
-          <h2 className="text-xs uppercase text-gray-500 tracking-wider font-semibold">Nacional</h2>
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
 
-          <StatCard
-            label="Total empleados"
-            value={meta.totalEmpleados.toLocaleString("es-CO")}
-            icon={Users}
-            iconClass="text-violet-400"
-          />
+        {/* ── National stats ── */}
+        {meta && (
+          <section className="space-y-3">
+            <SectionLabel>Nacional</SectionLabel>
 
-          <div className="grid grid-cols-2 gap-3">
             <StatCard
-              label="Departamentos"
+              label="Total empleados"
+              value={meta.totalEmpleados.toLocaleString("es-CO")}
+              icon={Users}
+            />
+
+            <StatCard
+              label="Departamentos activos"
               value={String(meta.totalDepartamentos)}
               icon={MapPin}
-              iconClass="text-blue-400"
             />
-            {meta.variacionMensual != null && (
-              <StatCard
-                label="Var. mensual"
-                value={`${meta.variacionMensual > 0 ? "+" : ""}${meta.variacionMensual.toFixed(1)} %`}
-                icon={meta.variacionMensual >= 0 ? TrendingUp : TrendingDown}
-                iconClass={meta.variacionMensual >= 0 ? "text-emerald-400" : "text-red-400"}
-              />
+
+            {fecha && (
+              <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                <Calendar className="w-3 h-3 shrink-0" />
+                <span>
+                  {new Date(fecha).toLocaleDateString("es-CO", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
             )}
-          </div>
+          </section>
+        )}
 
-          {(meta.fechaActualizacion ?? meta.generadoEn) && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>
-                Actualizado:{" "}
-                {new Date(
-                  meta.fechaActualizacion ?? meta.generadoEn ?? ""
-                ).toLocaleDateString("es-CO", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-          )}
-        </section>
-      )}
+        {/* ── Department list ── */}
+        {!selected && regionesSorted.length > 0 && (
+          <section className="space-y-2">
+            <SectionLabel>Departamentos con cobertura</SectionLabel>
+            <div className="space-y-1.5">
+              {regionesSorted.map((r) => {
+                const nombre = r.codigoDane
+                  ? (nombrePorDane.get(r.codigoDane) ?? r.departamento ?? r.codigoDane)
+                  : (r.departamento ?? "—");
+                const emp = r.totalEmpleados ?? r.empleados ?? 0;
 
-      {/* ── Department navigation list (visible when nothing selected) ── */}
-      {!departamentoSeleccionado && regionesSorted.length > 0 && (
-        <section className="space-y-2 flex-1 min-h-0 flex flex-col">
-          <h2 className="text-xs uppercase text-gray-500 tracking-wider font-semibold shrink-0">
-            Departamentos con cobertura
-          </h2>
-          <div className="overflow-y-auto space-y-1.5 pr-1 flex-1">
-            {regionesSorted.map((r) => {
-              const nombre = r.codigoDane
-                ? (nombrePorDane.get(r.codigoDane) ?? r.departamento ?? r.codigoDane)
-                : (r.departamento ?? "—");
-              const emp = r.totalEmpleados ?? r.empleados ?? 0;
-              return (
-                <button
-                  key={r.codigoDane}
-                  onClick={() => r.codigoDane && setSeleccionado(r.codigoDane)}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-gray-700/30 hover:bg-gray-700/60
-                             border border-gray-700/50 hover:border-gray-600 transition-all duration-150 group"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium group-hover:text-white transition-colors">
-                      {nombre}
-                    </span>
-                    <span className="text-xs font-mono text-gray-400">
-                      {emp.toLocaleString("es-CO")}
-                    </span>
-                  </div>
-                  <div className="h-1 rounded-full bg-gray-700 overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${(r.intensidad ?? 0) * 100}%`,
-                        backgroundColor: intensidadAColor(r.intensidad ?? 0),
-                      }}
-                    />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ── Selected department detail ── */}
-      {departamentoSeleccionado && (
-        <section className="space-y-3 flex-1 min-h-0 flex flex-col">
-          <div className="flex items-center justify-between shrink-0">
-            <h2 className="text-xs uppercase text-gray-500 tracking-wider font-semibold">
-              Departamento seleccionado
-            </h2>
-            <button
-              onClick={() => setSeleccionado(departamentoSeleccionado)}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              ← Volver
-            </button>
-          </div>
-
-          <div className="overflow-y-auto flex-1 space-y-3 pr-1">
-            {/* Department header card */}
-            <div
-              className="bg-gray-700/40 rounded-xl p-4 border transition-all duration-300"
-              style={{
-                borderColor: deptoInfo?.region
-                  ? intensidadAColor(deptoInfo.region.intensidad) + "55"
-                  : "rgba(107,114,128,0.4)",
-              }}
-            >
-              <p className="font-semibold text-lg leading-tight">{deptoInfo?.nombre}</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Código DANE: {departamentoSeleccionado}
-              </p>
-
-              {deptoInfo?.region && (
-                <div className="mt-3 space-y-3">
-                  <IntensityBar intensidad={deptoInfo.region.intensidad} />
-                  {(deptoInfo.region.totalEmpleados ?? deptoInfo.region.empleados) != null && (
-                    <div className="flex items-end justify-between">
-                      <span className="text-sm text-gray-400">Empleados registrados</span>
-                      <span className="text-2xl font-bold font-mono">
-                        {(
-                          deptoInfo.region.totalEmpleados ??
-                          deptoInfo.region.empleados ??
-                          0
-                        ).toLocaleString("es-CO")}
+                return (
+                  <button
+                    key={r.codigoDane}
+                    onClick={() => r.codigoDane && setSeleccionado(r.codigoDane)}
+                    className="w-full text-left px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800
+                               border border-slate-700/50 hover:border-slate-600 transition-all duration-150 group"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-medium text-slate-300 group-hover:text-slate-100 transition-colors truncate mr-2">
+                        {nombre}
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-500 shrink-0">
+                        {emp.toLocaleString("es-CO")}
                       </span>
                     </div>
+                    <div className="h-0.5 rounded-full bg-slate-700/60 overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${(r.intensidad ?? 0) * 100}%`,
+                          backgroundColor: intensidadAColor(r.intensidad ?? 0),
+                        }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ── Empty state ── */}
+        {!selected && regionesSorted.length === 0 && !cargando && (
+          <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center">
+            <p className="text-xs text-slate-500">
+              Sin datos disponibles. Haz clic en un departamento del mapa para explorar.
+            </p>
+          </div>
+        )}
+
+        {/* ── Selected department ── */}
+        {selected && (
+          <section className="space-y-4">
+
+            {/* Back button + label */}
+            <div className="flex items-center justify-between">
+              <SectionLabel>Departamento</SectionLabel>
+              <button
+                onClick={() => setSeleccionado(selected)}
+                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                <ChevronLeft className="w-3 h-3" />
+                Volver
+              </button>
+            </div>
+
+            {/* Department card */}
+            <div
+              className="rounded-xl border bg-slate-800/60 p-4 space-y-4"
+              style={{
+                borderColor: deptoInfo?.region
+                  ? intensidadAColor(deptoInfo.region.intensidad) + "40"
+                  : "#334155",
+              }}
+            >
+              <div>
+                <p className="font-semibold text-slate-100 leading-snug">{deptoInfo?.nombre}</p>
+                <p className="text-[10px] font-mono text-slate-500 mt-0.5">DANE {selected}</p>
+              </div>
+
+              {deptoInfo?.region && (
+                <>
+                  <CoverageBar intensidad={deptoInfo.region.intensidad} />
+
+                  {(deptoInfo.region.totalEmpleados ?? deptoInfo.region.empleados) != null && (
+                    <div className="pt-3 border-t border-slate-700/60">
+                      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium mb-1">
+                        Empleados registrados
+                      </p>
+                      <p className="text-2xl font-bold font-mono text-slate-100">
+                        {(deptoInfo.region.totalEmpleados ?? deptoInfo.region.empleados ?? 0).toLocaleString("es-CO")}
+                      </p>
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </div>
 
-            {/* Municipalities breakdown */}
+            {/* Municipalities */}
             {deptoInfo?.region?.municipios && deptoInfo.region.municipios.length > 0 && (
-              <div className="bg-gray-700/20 rounded-xl p-4 border border-gray-700/40 space-y-3">
+              <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-3.5 h-3.5 text-blue-400" />
-                  <h3 className="text-xs uppercase text-gray-500 tracking-wider font-semibold">
-                    Municipios ({deptoInfo.region.municipios.length})
-                  </h3>
+                  <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <SectionLabel>Municipios ({deptoInfo.region.municipios.length})</SectionLabel>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {deptoInfo.region.municipios.map((m) => (
                     <MunicipioRow
                       key={m.municipio}
                       mun={m}
-                      maxEmpleados={deptoInfo.region!.municipios![0].empleados}
+                      max={deptoInfo.region!.municipios![0].empleados}
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* No data for selected department */}
+            {/* No data placeholder */}
             {!deptoInfo?.region && (
-              <div className="bg-gray-700/20 rounded-xl p-4 border border-dashed border-gray-700 text-center">
-                <p className="text-sm text-gray-500">Sin datos para este departamento.</p>
+              <div className="rounded-xl border border-dashed border-slate-700 p-5 text-center">
+                <p className="text-xs text-slate-500">Sin datos para este departamento.</p>
               </div>
             )}
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Hint when no data and nothing selected */}
-      {!departamentoSeleccionado && regionesSorted.length === 0 && !cargando && (
-        <div className="bg-gray-700/20 rounded-xl p-4 border border-dashed border-gray-700 text-center flex-1">
-          <p className="text-sm text-gray-500">
-            Haz clic en un departamento del mapa para explorar sus datos.
-          </p>
+      </div>
+
+      {/* ── Footer: data source ── */}
+      {meta?.fuente && (
+        <div className="shrink-0 px-5 py-3 border-t border-slate-800">
+          <p className="text-[9px] text-slate-600 leading-relaxed">{meta.fuente}</p>
         </div>
       )}
-
-      {/* ── Legend ── */}
-      <div className="shrink-0">
-        <ColorLegend />
-      </div>
     </div>
   );
 }
