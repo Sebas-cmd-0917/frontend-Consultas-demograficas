@@ -1,17 +1,5 @@
 "use client";
 
-/**
- * DeptoExtruido — One extruded 3-D mesh per Colombian department.
- *
- * Pipeline per feature:
- *   GeoJSON rings  →  featureToShapes()  →  THREE.ExtrudeGeometry
- *   → mesh.rotation.x = -π/2  (lay the XY shape flat in world-space XZ)
- *   → extrusion along world-Y (up)
- *
- * Hover/selection glow is animated via useFrame lerping emissiveIntensity,
- * so it never causes a React re-render.
- */
-
 import { useRef, useMemo, useEffect, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
@@ -21,8 +9,8 @@ import { featureToShapes, type ProjectFn } from "@/utils/geojson-to-shape.util";
 import { intensidadAColorTHREE } from "@/utils/generador-color.util";
 import { useDatosDemograficos } from "@/hooks/useDatosDemograficos";
 
-const MAX_EXTRUSION = 10; // Three.js units for intensity = 1.0
-const MIN_EXTRUSION = 0.3; // Flat departments still have a visible sliver
+const MAX_EXTRUSION = 4;    // reduced: less tall, more map-like
+const MIN_EXTRUSION = 0.08; // flat departments still visible
 
 interface Props {
   feature: Feature<Polygon | MultiPolygon>;
@@ -36,11 +24,10 @@ export default function DeptoExtruido({
   feature,
   intensidad,
   codigoDane,
-  nombre: _nombre, // consumed by parent for tooltip; declared to keep prop API clear
+  nombre: _nombre,
   project,
 }: Props) {
   const materialRef = useRef<THREE.MeshStandardMaterial>(null);
-  // Mutable target for the glow animation — never triggers React renders
   const emissiveTarget = useRef(0);
 
   const departamentoHover = useDatosDemograficos((s) => s.departamentoHover);
@@ -53,43 +40,52 @@ export default function DeptoExtruido({
 
   const baseColor = useMemo(() => intensidadAColorTHREE(intensidad), [intensidad]);
 
-  // ── Geometry ────────────────────────────────────────────────────────────────
-  const geometry = useMemo(() => {
+  // Compute shapes + extruded geometry together so outlines can reuse shapes
+  const { geometry, outlineGeos } = useMemo(() => {
     const shapes = featureToShapes(feature, project);
-    if (shapes.length === 0) return null;
-    const depth = MIN_EXTRUSION + intensidad * MAX_EXTRUSION;
-    return new THREE.ExtrudeGeometry(shapes, {
-      depth,
+    if (shapes.length === 0) return { geometry: null, outlineGeos: [] };
+
+    const d = MIN_EXTRUSION + intensidad * MAX_EXTRUSION;
+    const extruded = new THREE.ExtrudeGeometry(shapes, {
+      depth: d,
       bevelEnabled: false,
       steps: 1,
     });
+
+    // One outline BufferGeometry per shape (top-face border at z = depth + small offset)
+    const outlines = shapes.map((shape) => {
+      const pts = shape.getPoints(10);
+      const arr = new Float32Array(pts.flatMap((p) => [p.x, p.y, d + 0.06]));
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+      return geo;
+    });
+
+    return { geometry: extruded, outlineGeos: outlines };
   }, [feature, intensidad, project]);
 
-  // Dispose GPU memory when geometry changes or component unmounts
   useEffect(
     () => () => {
       geometry?.dispose();
+      outlineGeos.forEach((g) => g.dispose());
     },
-    [geometry]
+    [geometry, outlineGeos]
   );
 
-  // ── Glow target update ──────────────────────────────────────────────────────
   useEffect(() => {
     emissiveTarget.current = isSelected ? 0.6 : isHovered ? 0.32 : 0;
   }, [isHovered, isSelected]);
 
-  // ── Smooth glow animation (runs every frame, zero GC pressure) ───────────
   useFrame(() => {
     const mat = materialRef.current;
     if (!mat) return;
     mat.emissiveIntensity = THREE.MathUtils.lerp(
       mat.emissiveIntensity,
       emissiveTarget.current,
-      0.12 // ~8-frame ease
+      0.12
     );
   });
 
-  // ── Pointer handlers ────────────────────────────────────────────────────────
   const onPointerOver = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
@@ -115,28 +111,36 @@ export default function DeptoExtruido({
   if (!geometry) return null;
 
   return (
-    <mesh
-      geometry={geometry}
-      /**
-       * Rotation: the ExtrudeGeometry lives in the XY plane (depth along Z).
-       * Rotating -π/2 around X maps:
-       *   mesh-X → world-X  (east–west)
-       *   mesh-Y → world-Z  (north–south, flipped for screen→world)
-       *   mesh-Z → world-Y  (extrusion goes UP — visible from above)
-       */
-      rotation={[-Math.PI / 2, 0, 0]}
-      onPointerOver={onPointerOver}
-      onPointerOut={onPointerOut}
-      onClick={onClick}
-    >
-      <meshStandardMaterial
-        ref={materialRef}
-        color={baseColor}
-        emissive={baseColor}
-        emissiveIntensity={0}
-        roughness={0.45}
-        metalness={0.18}
-      />
-    </mesh>
+    /**
+     * Group carries the rotation so both the extruded mesh and the outline
+     * line loops share the same XY→XZ transform:
+     *   local-X → world-X  (east–west)
+     *   local-Y → world-Z  (north–south)
+     *   local-Z → world-Y  (up — extrusion direction)
+     */
+    <group rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        geometry={geometry}
+        onPointerOver={onPointerOver}
+        onPointerOut={onPointerOut}
+        onClick={onClick}
+      >
+        <meshStandardMaterial
+          ref={materialRef}
+          color={baseColor}
+          emissive={baseColor}
+          emissiveIntensity={0}
+          roughness={0.45}
+          metalness={0.18}
+        />
+      </mesh>
+
+      {/* Department border outlines drawn at the top face of each shape */}
+      {outlineGeos.map((geo, i) => (
+        <lineLoop key={i} geometry={geo}>
+          <lineBasicMaterial color="#08081a" transparent opacity={0.85} />
+        </lineLoop>
+      ))}
+    </group>
   );
 }

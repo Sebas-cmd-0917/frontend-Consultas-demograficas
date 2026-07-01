@@ -75,12 +75,12 @@ function MapScene({
 
   return (
     <>
-      {/* Key light — bright, slightly warm */}
-      <directionalLight position={[30, 60, 20]} intensity={1.4} castShadow />
-      {/* Fill light — cool blue from behind */}
-      <directionalLight position={[-20, 30, -30]} intensity={0.4} color="#6080ff" />
-      {/* Ambient so shadowed faces aren't pitch black */}
-      <ambientLight intensity={0.55} />
+      {/* Key light — overhead, slightly warm */}
+      <directionalLight position={[20, 80, 10]} intensity={1.6} castShadow />
+      {/* Fill light — soft side fill */}
+      <directionalLight position={[-30, 40, -20]} intensity={0.5} color="#8090ff" />
+      {/* Ambient — strong enough so low-intensity departments stay readable */}
+      <ambientLight intensity={0.7} />
 
       {features.map((feature, idx) => {
         const props = feature.properties as Record<string, unknown> | null;
@@ -234,7 +234,7 @@ export default function CanvasWrapper() {
   return (
     <div className="w-full h-full relative">
       <Canvas
-        camera={{ position: [0, 70, 45], fov: 45 }}
+        camera={{ position: [0, 75, 18], fov: 40 }}
         shadows
         gl={{ antialias: true, alpha: false }}
         style={{ background: "#0f0f1a" }}
