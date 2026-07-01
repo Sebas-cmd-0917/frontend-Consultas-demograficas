@@ -10,7 +10,7 @@ import type { MunicipioData } from "@/types/demografia.types";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[9px] uppercase tracking-widest text-slate-500 font-medium">{children}</p>
+    <p className="text-[9px] uppercase tracking-widest text-cl-muted font-semibold">{children}</p>
   );
 }
 
@@ -24,12 +24,12 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+    <div className="bg-cl-card/60 border border-white/10 rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">{label}</span>
+        <Icon className="w-3.5 h-3.5 text-cl-teal shrink-0" />
+        <span className="text-[10px] uppercase tracking-widest text-cl-muted font-semibold">{label}</span>
       </div>
-      <p className="text-2xl font-bold font-mono text-slate-100 leading-none">{value}</p>
+      <p className="text-2xl font-extrabold font-mono text-white leading-none">{value}</p>
     </div>
   );
 }
@@ -39,12 +39,12 @@ function CoverageBar({ intensidad }: { intensidad: number }) {
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between items-baseline">
-        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">Cobertura</span>
-        <span className="text-sm font-semibold font-mono" style={{ color }}>
+        <span className="text-[10px] uppercase tracking-widest text-cl-muted font-semibold">Cobertura</span>
+        <span className="text-sm font-bold font-mono" style={{ color }}>
           {(intensidad * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="h-1 rounded-full bg-slate-700/60 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${intensidad * 100}%`, backgroundColor: color }}
@@ -59,10 +59,10 @@ function MunicipioRow({ mun, max }: { mun: MunicipioData; max: number }) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center">
-        <span className="text-xs text-slate-300 truncate mr-2">{mun.municipio}</span>
-        <span className="text-[11px] font-mono text-slate-400 shrink-0">{mun.empleados.toLocaleString("es-CO")}</span>
+        <span className="text-xs text-white/90 truncate mr-2">{mun.municipio}</span>
+        <span className="text-[11px] font-mono text-cl-muted shrink-0">{mun.empleados.toLocaleString("es-CO")}</span>
       </div>
-      <div className="h-0.5 rounded-full bg-slate-700/60 overflow-hidden">
+      <div className="h-0.5 rounded-full bg-white/10 overflow-hidden">
         <div
           className="h-full rounded-full"
           style={{ width: `${pct}%`, backgroundColor: intensidadAColor(pct / 100) }}
@@ -75,12 +75,12 @@ function MunicipioRow({ mun, max }: { mun: MunicipioData; max: number }) {
 // ─── Main panel ────────────────────────────────────────────────────────────────
 
 export default function PanelMeticas() {
-  const meta                  = useDatosDemograficos((s) => s.meta);
-  const geoJSON               = useDatosDemograficos((s) => s.geoJSON);
-  const regiones              = useDatosDemograficos((s) => s.regiones);
-  const selected              = useDatosDemograficos((s) => s.departamentoSeleccionado);
-  const setSeleccionado        = useDatosDemograficos((s) => s.setSeleccionado);
-  const cargando              = useDatosDemograficos((s) => s.cargando);
+  const meta            = useDatosDemograficos((s) => s.meta);
+  const geoJSON         = useDatosDemograficos((s) => s.geoJSON);
+  const regiones        = useDatosDemograficos((s) => s.regiones);
+  const selected        = useDatosDemograficos((s) => s.departamentoSeleccionado);
+  const setSeleccionado = useDatosDemograficos((s) => s.setSeleccionado);
+  const cargando        = useDatosDemograficos((s) => s.cargando);
 
   const nombrePorDane = (() => {
     if (!geoJSON) return new Map<string, string>();
@@ -109,44 +109,45 @@ export default function PanelMeticas() {
     <div className="flex flex-col h-full">
 
       {/* ── Sidebar header ── */}
-      <div className="shrink-0 px-5 py-5 border-b border-slate-800">
+      <div className="shrink-0 px-5 py-5 border-b border-white/10">
         <SectionLabel>Panel de métricas</SectionLabel>
-        <h1 className="text-base font-semibold text-slate-100 mt-1 leading-snug">
-          Distribución laboral
+        <h1 className="text-lg font-extrabold text-white mt-1 leading-snug">
+          Distribución del talento
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">Colombia · Datos departamentales</p>
+        <p className="text-xs text-cl-muted mt-0.5">Campuslands · Datos por departamento</p>
       </div>
 
       {/* ── Spinner ── */}
       {cargando && (
-        <div className="shrink-0 flex items-center gap-2 px-5 py-3 text-xs text-slate-500">
-          <div className="w-3.5 h-3.5 border border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="shrink-0 flex items-center gap-2 px-5 py-3 text-xs text-cl-muted">
+          <div className="w-3.5 h-3.5 border border-cl-teal border-t-transparent rounded-full animate-spin" />
           Cargando datos…
         </div>
       )}
 
       {/* ── Scrollable content ── */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+      <div className="flex-1 lg:overflow-y-auto px-5 py-5 space-y-6">
 
         {/* ── National stats ── */}
         {meta && (
           <section className="space-y-3">
             <SectionLabel>Nacional</SectionLabel>
 
-            <StatCard
-              label="Total empleados"
-              value={meta.totalEmpleados.toLocaleString("es-CO")}
-              icon={Users}
-            />
-
-            <StatCard
-              label="Departamentos activos"
-              value={String(meta.totalDepartamentos)}
-              icon={MapPin}
-            />
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+              <StatCard
+                label="Total empleados"
+                value={meta.totalEmpleados.toLocaleString("es-CO")}
+                icon={Users}
+              />
+              <StatCard
+                label="Departamentos activos"
+                value={String(meta.totalDepartamentos)}
+                icon={MapPin}
+              />
+            </div>
 
             {fecha && (
-              <div className="flex items-center gap-2 text-[11px] text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] text-cl-muted">
                 <Calendar className="w-3 h-3 shrink-0" />
                 <span>
                   {new Date(fecha).toLocaleDateString("es-CO", {
@@ -175,18 +176,18 @@ export default function PanelMeticas() {
                   <button
                     key={r.codigoDane}
                     onClick={() => r.codigoDane && setSeleccionado(r.codigoDane)}
-                    className="w-full text-left px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800
-                               border border-slate-700/50 hover:border-slate-600 transition-all duration-150 group"
+                    className="w-full text-left px-3 py-2.5 rounded-xl bg-cl-card/40 hover:bg-cl-card
+                               border border-white/10 hover:border-cl-teal/40 transition-all duration-150 group"
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-medium text-slate-300 group-hover:text-slate-100 transition-colors truncate mr-2">
+                      <span className="text-xs font-semibold text-white/90 group-hover:text-white transition-colors truncate mr-2">
                         {nombre}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-500 shrink-0">
+                      <span className="text-[11px] font-mono text-cl-muted shrink-0">
                         {emp.toLocaleString("es-CO")}
                       </span>
                     </div>
-                    <div className="h-0.5 rounded-full bg-slate-700/60 overflow-hidden">
+                    <div className="h-0.5 rounded-full bg-white/10 overflow-hidden">
                       <div
                         className="h-full rounded-full"
                         style={{
@@ -204,9 +205,9 @@ export default function PanelMeticas() {
 
         {/* ── Empty state ── */}
         {!selected && regionesSorted.length === 0 && !cargando && (
-          <div className="rounded-xl border border-dashed border-slate-700 p-6 text-center">
-            <p className="text-xs text-slate-500">
-              Sin datos disponibles. Haz clic en un departamento del mapa para explorar.
+          <div className="rounded-2xl border border-dashed border-white/20 p-6 text-center">
+            <p className="text-xs text-cl-muted">
+              Sin datos disponibles. Toca un departamento del mapa para explorar.
             </p>
           </div>
         )}
@@ -220,7 +221,7 @@ export default function PanelMeticas() {
               <SectionLabel>Departamento</SectionLabel>
               <button
                 onClick={() => setSeleccionado(selected)}
-                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                className="flex items-center gap-1 text-[11px] text-cl-muted hover:text-cl-teal transition-colors"
               >
                 <ChevronLeft className="w-3 h-3" />
                 Volver
@@ -229,16 +230,16 @@ export default function PanelMeticas() {
 
             {/* Department card */}
             <div
-              className="rounded-xl border bg-slate-800/60 p-4 space-y-4"
+              className="rounded-2xl border bg-cl-card/60 p-4 space-y-4"
               style={{
                 borderColor: deptoInfo?.region
-                  ? intensidadAColor(deptoInfo.region.intensidad) + "40"
-                  : "#334155",
+                  ? intensidadAColor(deptoInfo.region.intensidad) + "55"
+                  : "rgba(255,255,255,0.12)",
               }}
             >
               <div>
-                <p className="font-semibold text-slate-100 leading-snug">{deptoInfo?.nombre}</p>
-                <p className="text-[10px] font-mono text-slate-500 mt-0.5">DANE {selected}</p>
+                <p className="font-bold text-white leading-snug">{deptoInfo?.nombre}</p>
+                <p className="text-[10px] font-mono text-cl-muted/70 mt-0.5">DANE {selected}</p>
               </div>
 
               {deptoInfo?.region && (
@@ -246,11 +247,11 @@ export default function PanelMeticas() {
                   <CoverageBar intensidad={deptoInfo.region.intensidad} />
 
                   {(deptoInfo.region.totalEmpleados ?? deptoInfo.region.empleados) != null && (
-                    <div className="pt-3 border-t border-slate-700/60">
-                      <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium mb-1">
+                    <div className="pt-3 border-t border-white/10">
+                      <p className="text-[10px] uppercase tracking-widest text-cl-muted font-semibold mb-1">
                         Empleados registrados
                       </p>
-                      <p className="text-2xl font-bold font-mono text-slate-100">
+                      <p className="text-2xl font-extrabold font-mono text-white">
                         {(deptoInfo.region.totalEmpleados ?? deptoInfo.region.empleados ?? 0).toLocaleString("es-CO")}
                       </p>
                     </div>
@@ -261,9 +262,9 @@ export default function PanelMeticas() {
 
             {/* Municipalities */}
             {deptoInfo?.region?.municipios && deptoInfo.region.municipios.length > 0 && (
-              <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4 space-y-3">
+              <div className="rounded-2xl border border-white/10 bg-cl-card/30 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <Building2 className="w-3.5 h-3.5 text-cl-teal" />
                   <SectionLabel>Municipios ({deptoInfo.region.municipios.length})</SectionLabel>
                 </div>
                 <div className="space-y-3">
@@ -280,8 +281,8 @@ export default function PanelMeticas() {
 
             {/* No data placeholder */}
             {!deptoInfo?.region && (
-              <div className="rounded-xl border border-dashed border-slate-700 p-5 text-center">
-                <p className="text-xs text-slate-500">Sin datos para este departamento.</p>
+              <div className="rounded-2xl border border-dashed border-white/20 p-5 text-center">
+                <p className="text-xs text-cl-muted">Sin datos para este departamento.</p>
               </div>
             )}
           </section>
@@ -291,8 +292,8 @@ export default function PanelMeticas() {
 
       {/* ── Footer: data source ── */}
       {meta?.fuente && (
-        <div className="shrink-0 px-5 py-3 border-t border-slate-800">
-          <p className="text-[9px] text-slate-600 leading-relaxed">{meta.fuente}</p>
+        <div className="shrink-0 px-5 py-3 border-t border-white/10">
+          <p className="text-[9px] text-cl-muted/60 leading-relaxed">{meta.fuente}</p>
         </div>
       )}
     </div>

@@ -1,12 +1,12 @@
-// Color ramp: deep-indigo → violet → hot-pink → orange
+// Color ramp (Campuslands brand): muted blue → royal blue → teal → bright mint
 // Maps intensity 0.0 → 1.0 across four perceptually distinct stops.
 interface Stop { at: number; r: number; g: number; b: number }
 
 const STOPS: Stop[] = [
-  { at: 0.00, r: 49,  g: 46,  b: 129 }, // #312e81 deep indigo
-  { at: 0.33, r: 124, g: 58,  b: 237 }, // #7c3aed violet
-  { at: 0.67, r: 236, g: 72,  b: 153 }, // #ec4899 hot-pink
-  { at: 1.00, r: 249, g: 115, b: 22  }, // #f97316 orange
+  { at: 0.00, r: 52,  g: 57,  b: 126 }, // #34397e muted blue (low / no data)
+  { at: 0.33, r: 47,  g: 102, b: 196 }, // #2f66c4 royal blue
+  { at: 0.66, r: 23,  g: 179, b: 168 }, // #17b3a8 teal
+  { at: 1.00, r: 70,  g: 232, b: 191 }, // #46e8bf bright mint (high)
 ];
 
 function lerp(a: number, b: number, t: number) {

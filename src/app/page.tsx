@@ -3,33 +3,43 @@ import PanelMeticas from "@/components/ui/PanelMeticas";
 
 export default function Home() {
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-100">
+    <div className="cl-bg flex flex-col min-h-screen lg:h-screen text-white">
 
       {/* ── Top header bar ── */}
-      <header className="shrink-0 h-13 border-b border-slate-800 flex items-center justify-between px-6">
-        <div className="flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
-          <span className="text-sm font-semibold tracking-wide text-slate-100">
-            Análisis Demográfico
+      <header className="shrink-0 border-b border-white/10 bg-cl-surface/60 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 sm:px-6 h-14">
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-cl-teal shadow-[0_0_12px_2px_rgba(44,224,182,0.6)]" />
+            <span className="text-base font-extrabold tracking-tight text-white lowercase">
+              campuslands
+            </span>
+            <span className="hidden sm:inline text-white/30">·</span>
+            <span className="hidden sm:inline text-sm text-cl-muted truncate">
+              Análisis Demográfico
+            </span>
+          </div>
+
+          {/* Tagline (desktop only) */}
+          <span className="hidden lg:inline text-[11px] text-cl-muted/70 font-medium tracking-widest uppercase">
+            Distribución del talento · Colombia
           </span>
-          <span className="text-slate-600 text-sm">·</span>
-          <span className="text-sm text-slate-400">Colombia</span>
         </div>
-        <span className="text-xs text-slate-600 font-mono tracking-widest uppercase">
-          Distribución Geográfica · Cobertura Poblacional
-        </span>
       </header>
 
       {/* ── Main area ── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
 
         {/* Map */}
-        <main className="flex-1 relative overflow-hidden">
+        <main className="relative h-[58vh] min-h-[360px] lg:h-auto lg:flex-1 overflow-hidden">
           <CanvasWrapper />
         </main>
 
         {/* Sidebar panel */}
-        <aside className="w-80 shrink-0 border-l border-slate-800 bg-slate-900 overflow-y-auto">
+        <aside
+          className="w-full lg:w-80 xl:w-96 shrink-0 border-t lg:border-t-0 lg:border-l
+                     border-white/10 bg-cl-surface/40 lg:overflow-y-auto"
+        >
           <PanelMeticas />
         </aside>
 

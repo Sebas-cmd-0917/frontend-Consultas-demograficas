@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "../styles/globals.css";
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-poppins",
+});
 
 export const metadata: Metadata = {
-  title: "Análisis Demográfico · Colombia",
-  description: "Visualización geográfica de distribución poblacional y cobertura laboral por departamento",
+  title: "Campuslands · Análisis Demográfico",
+  description: "Distribución geográfica del talento Campuslands por departamento en Colombia",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="h-full">
-      <body className={`${inter.className} h-full overflow-hidden`}>{children}</body>
+    <html lang="es" className={`${poppins.variable} h-full`}>
+      {/* Fixed viewport on desktop; the page scrolls on mobile */}
+      <body className="min-h-full lg:h-full lg:overflow-hidden">{children}</body>
     </html>
   );
 }

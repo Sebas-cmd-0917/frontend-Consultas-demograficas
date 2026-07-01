@@ -1,22 +1,47 @@
 @import "tailwindcss";
 
+/* ─── Campuslands brand palette ───────────────────────────────────────────────
+   Registered as Tailwind v4 theme colors → usable as bg-cl-blue, text-cl-teal,
+   border-cl-teal/20, etc. Change these hex values to match the official brand
+   guide and the whole app updates. */
+@theme {
+  --color-cl-blue:    #1b1d94; /* royal blue — main background */
+  --color-cl-navy:    #101253; /* deep navy — behind the map / darkest */
+  --color-cl-surface: #23259e; /* raised surface — header, cards */
+  --color-cl-card:    #2a2caa; /* slightly lighter card */
+  --color-cl-teal:    #2ce0b6; /* primary accent (teal / mint) */
+  --color-cl-teal-2:  #57f2cf; /* bright teal for highlights */
+  --color-cl-muted:   #aab0ea; /* muted lavender-white for secondary text */
+}
+
 :root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  --background: #1b1d94;
+  --foreground: #ffffff;
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-poppins), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; }
+/* Subtle radial glow, echoing the Campuslands hero background */
+.cl-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(44, 224, 182, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(87, 242, 207, 0.06), transparent 40%);
+}
+
+/* Custom scrollbar (teal-tinted) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
+::-webkit-scrollbar-thumb { background: rgba(44, 224, 182, 0.35); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(44, 224, 182, 0.6); }
 
 /* Smooth SVG path transitions */
-svg path { transition: opacity 0.15s ease, stroke-width 0.15s ease; }
+svg path { transition: opacity 0.15s ease, stroke-width 0.15s ease, fill 0.2s ease; }
