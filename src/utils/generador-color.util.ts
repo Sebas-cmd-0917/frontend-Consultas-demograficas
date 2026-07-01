@@ -23,8 +23,3 @@ export function intensidadAColor(intensidad: number): string {
   const ch = (a: number, b: number) => Math.round(lerp(a, b, lt)).toString(16).padStart(2, "0");
   return `#${ch(s.r, e.r)}${ch(s.g, e.g)}${ch(s.b, e.b)}`;
 }
-
-export const interpolarColor = (valor: number, min: number, max: number): string => {
-  const norm = max === min ? 0 : (valor - min) / (max - min);
-  return intensidadAColor(norm);
-};
