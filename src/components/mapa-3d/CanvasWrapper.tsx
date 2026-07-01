@@ -33,24 +33,7 @@ function MapaSvg({
   }, [regiones]);
 
   const pathGen = useMemo(() => {
-    // Use a manually-specified bbox for Colombia instead of geoBounds(),
-    // which returns world bounds when the GeoJSON winding order is not
-    // spherically correct (d3-geo interprets those rings as world-covering).
-    const colombiaBbox = {
-      type: "Feature" as const,
-      properties: null,
-      geometry: {
-        type: "Polygon" as const,
-        coordinates: [[
-          [-81.74, -4.24],
-          [-66.85, -4.24],
-          [-66.85, 13.38],
-          [-81.74, 13.38],
-          [-81.74, -4.24],
-        ]],
-      },
-    };
-    const proj = geoMercator().fitSize([W, H], colombiaBbox as never);
+    const proj = geoMercator().fitSize([W, H], geoJSON);
     return geoPath(proj);
   }, [geoJSON]);
 
